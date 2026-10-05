@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Secrets / local config
+.env
+*.env
+!.env.example
+!**/.env.example
+
+# Node
+node_modules/
+frontend/dist/
+frontend/coverage/
+
+# Data and model artefacts (reproducible via scripts)
+data/raw/*
+data/processed/*
+data/train/*
+data/validation/*
+data/test/*
+models/checkpoints/*
+models/final/*
+models/tokenizer/*
+reports/*
+!**/.gitkeep
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log

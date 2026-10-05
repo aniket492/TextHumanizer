@@ -1,0 +1,36 @@
+# Python 3.12 / 3.13 compatible. For a CPU-only Linux install (e.g. Docker), install torch first:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+# --- Web / API ---
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.32
+pydantic>=2.9,<3
+pydantic-settings>=2.6
+email-validator>=2.2
+python-dotenv>=1.0
+SQLAlchemy>=2.0.36,<2.1
+alembic>=1.14
+psycopg[binary]>=3.2.3
+PyJWT>=2.10
+bcrypt>=4.2
+
+# --- ML / NLP ---
+torch>=2.6
+transformers>=4.56,<5
+tokenizers>=0.20
+hf_xet>=1.1
+datasets>=3.1
+accelerate>=1.1
+peft>=0.13
+sentence-transformers>=3.3
+spacy>=3.8.3,<3.9
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
+nltk>=3.9
+scikit-learn>=1.5
+textstat>=0.7.4
+numpy>=2.0
+pandas>=2.2
+pyarrow>=17
+
+# --- Testing ---
+pytest>=8.3
+httpx>=0.27

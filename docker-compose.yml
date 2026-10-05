@@ -1,0 +1,69 @@
+name: ai-humanizer
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-humanizer}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env (see .env.example)}
+      POSTGRES_DB: ${POSTGRES_DB:-humanizer}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-humanizer}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-humanizer}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (see .env.example)}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
+      MODEL_BACKEND: ${MODEL_BACKEND:-auto}
+      MODEL_NAME: ${MODEL_NAME:-Qwen/Qwen2.5-0.5B-Instruct}
+      MODEL_PATH: ${MODEL_PATH:-}
+      MODEL_DEVICE: ${MODEL_DEVICE:-cpu}
+      MODEL_PRELOAD: ${MODEL_PRELOAD:-true}
+      MODEL_TIMEOUT_SECONDS: ${MODEL_TIMEOUT_SECONDS:-90}
+      SIMILARITY_MODEL: ${SIMILARITY_MODEL:-sentence-transformers/all-MiniLM-L6-v2}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - hf-cache:/home/app/.cache/huggingface
+      - ./models:/app/models:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health').status==200 else 1)"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+      args:
+        # Empty = same origin; nginx proxies /api and /health to the backend.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+
+volumes:
+  pgdata:
+  hf-cache:
